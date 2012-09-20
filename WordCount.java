@@ -5,7 +5,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.conf.*;
 import org.apache.hadoop.io.*;
 import org.apache.hadoop.mapred.*;
-import org.apache.hadoop.utils.*;
+import org.apache.hadoop.util.*;
 
 public class WordCount {
     public static class Map extends MapReduceBase 
@@ -21,7 +21,7 @@ public class WordCount {
             Reporter reporter
         ) throws IOException {
             String line = value.toString();
-            StringTokenizer tokenizer = new StringTokenizer();
+            StringTokenizer tokenizer = new StringTokenizer(line);
             while (tokenizer.hasMoreTokens()) {
                 word.set(tokenizer.nextToken());
                 output.collect(word, one);
@@ -48,16 +48,14 @@ public class WordCount {
         } 
     }
 
-    public int run(String[] args) throws Exception {
-        //configuration conf = getConf();
-        
+    public static void main(String[] args) throws Exception {
         JobConf job = new JobConf(WordCount.class);
         job.setJobName("wordcount");
         Path in = new Path(args[0]);
         Path out = new Path(args[1]);
 
-        FileInputFormat.setInputPath(job, in);
-        FileOutputFormat.setOutputpath(job, out);
+        FileInputFormat.setInputPaths(job, in);
+        FileOutputFormat.setOutputPath(job, out);
         
         job.setMapperClass(Map.class);
         job.setReducerClass(Reduce.class);
@@ -68,13 +66,6 @@ public class WordCount {
         job.setOutputValueClass(IntWritable.class);
         //job.set("key.value.separator.in.input.line", ",");
 
-        jobClick.runJob(job);
-
-        return 0;
-    }
-
-    public static void main(String[] args) throws Exception {
-        int res = ToolRunner.run(new Configuration(), new MyJob(), args);
-        System.exit(res);
+        JobClient.runJob(job);
     }
 }
